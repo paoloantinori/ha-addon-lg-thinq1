@@ -26,4 +26,3 @@ RUN cp /run.sh /app/deploy/haos-addon/run.sh && chmod a+x /run.sh
 # paho-mqtt is the only non-stdlib dependency (the MQTT bridge).
 RUN pip install --no-cache-dir --break-system-packages paho-mqtt
 
-CMD [ "/run.sh" ]
