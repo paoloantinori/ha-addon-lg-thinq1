@@ -1,5 +1,5 @@
 name: LG ThinQ1 fake-cloud
-version: "1.0.3"
+version: "1.0.4"
 slug: lg_thinq_fake_cloud
 description: >-
   Local server that impersonates the LG ThinQ1 cloud so legacy ThinQ1 appliances
@@ -9,6 +9,9 @@ arch:
   - amd64
 host_network: true
 startup: services
+# s6-overlay /init must be PID 1: disable the docker-init shim the supervisor
+# otherwise adds (Init=true makes s6-overlay-suexec abort: not pid 1).
+init: false
 boot: auto
 ports:
   46030/tcp: 46030
