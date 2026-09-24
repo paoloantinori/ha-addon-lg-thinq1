@@ -29,7 +29,6 @@ RUN pip install --no-cache-dir --break-system-packages paho-mqtt
 # The unified HA base does NOT auto-run /run.sh: register it as a legacy s6
 # service (legacy-services oneshot reads /etc/services.d/*/run). Without this
 # the container boots the s6 tree and then idles with no app process.
-RUN mkdir -p /etc/services.d/lg-fake-cloud &&     printf '#!/bin/sh
-exec /run.sh
-' > /etc/services.d/lg-fake-cloud/run &&     chmod +x /etc/services.d/lg-fake-cloud/run
-
+RUN mkdir -p /etc/services.d/lg-fake-cloud \
+    && printf '#!/bin/sh\nexec /run.sh\n' > /etc/services.d/lg-fake-cloud/run \
+    && chmod +x /etc/services.d/lg-fake-cloud/run
