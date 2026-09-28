@@ -23,6 +23,10 @@ WORKDIR /app
 COPY run.sh /run.sh
 RUN cp /run.sh /app/deploy/haos-addon/run.sh && chmod a+x /run.sh
 
+# TASK-080: pinned healthy edge for the WM-family :47878 passthrough (PROTOCOL.md §4.4,
+# PAIRING_RUNBOOK.md §2-3: probe the pool, pin a verified edge; re-verify when edges rot).
+ENV LGM_47878_UPSTREAM=52.158.121.103:47878
+
 # paho-mqtt is the only non-stdlib dependency (the MQTT bridge).
 RUN pip install --no-cache-dir --break-system-packages paho-mqtt
 
