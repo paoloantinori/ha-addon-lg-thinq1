@@ -25,7 +25,10 @@ network.
 ## Ports
 
 - `:46030` (TLS) for ThinQ1 telemetry (`report/diagmon`).
-- `:47878` (raw TCP) for the ThinQ1 control channel (only active if `allow_control` is on).
+- `:47878` for the ThinQ1 control channel: always active in read-only mode
+  (DevInfo/Alive acks, Mon Start, state-pump ingest; TLS for the WM family,
+  msgpack for fridges, PROTOCOL.md 4.4). Control/Set commands are gated
+  behind `allow_control`.
 
 ## Safety
 
