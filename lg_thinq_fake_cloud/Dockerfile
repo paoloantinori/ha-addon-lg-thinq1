@@ -8,7 +8,7 @@ FROM ghcr.io/home-assistant/base:latest
 
 # The main repo + the exact commit (already pushed to origin) this add-on builds from.
 ARG MAIN_REPO=https://github.com/paoloantinori/local_smarthinq1.git
-ARG MAIN_COMMIT=48de184e2d77d49b3768c0088f3ebceff1c9fdb8
+ARG MAIN_COMMIT=4af1e94b1797f7ced2314197bb54ce7d41a67b1a
 
 RUN apk add --no-cache git python3 py3-pip openssl jq
 
@@ -28,7 +28,7 @@ RUN cp /run.sh /app/deploy/haos-addon/run.sh && chmod a+x /run.sh
 ENV LGM_47878_UPSTREAM=52.158.121.103:47878
 
 # paho-mqtt is the only non-stdlib dependency (the MQTT bridge).
-RUN pip install --no-cache-dir --break-system-packages paho-mqtt
+RUN pip install --no-cache-dir --break-system-packages paho-mqtt thinqconnect aiohttp
 
 # The unified HA base does NOT auto-run /run.sh: register it as a legacy s6
 # service (legacy-services oneshot reads /etc/services.d/*/run). Without this
