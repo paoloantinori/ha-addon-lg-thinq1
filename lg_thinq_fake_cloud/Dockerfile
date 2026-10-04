@@ -8,7 +8,7 @@ FROM ghcr.io/home-assistant/base:latest
 
 # The main repo + the exact commit (already pushed to origin) this add-on builds from.
 ARG MAIN_REPO=https://github.com/paoloantinori/local_smarthinq1.git
-ARG MAIN_COMMIT=4af1e94b1797f7ced2314197bb54ce7d41a67b1a
+ARG MAIN_COMMIT=7f70fe965fe2
 
 RUN apk add --no-cache git python3 py3-pip openssl jq
 
