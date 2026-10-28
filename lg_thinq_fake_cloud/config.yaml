@@ -1,5 +1,5 @@
 name: LG ThinQ1 fake-cloud
-version: "1.4.0"
+version: "1.4.1"
 slug: lg_thinq_fake_cloud
 description: >-
   Local server that impersonates the LG ThinQ1 cloud so legacy ThinQ1 appliances
@@ -26,6 +26,7 @@ options:
   mqtt_password: ""
   mode: "standalone"
   allow_control: false
+  snap_hex: false
   upstream_host: "eic.lgthinq.com"
   upstream_port: 46030
 schema:
@@ -35,5 +36,6 @@ schema:
   mqtt_password: password
   mode: list(standalone|bridge)
   allow_control: bool
+  snap_hex: bool
   upstream_host: str?
   upstream_port: port?
