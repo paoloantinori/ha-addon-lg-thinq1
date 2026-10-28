@@ -37,3 +37,16 @@ RUN pip install --no-cache-dir --break-system-packages paho-mqtt thinqconnect==1
 RUN mkdir -p /etc/services.d/lg-fake-cloud \
     && printf '#!/bin/sh\nexec /run.sh\n' > /etc/services.d/lg-fake-cloud/run \
     && chmod +x /etc/services.d/lg-fake-cloud/run
+
+# TASK-124: supervised relay + bridge services (s6 auto-restart on death).
+# Three additional services alongside the main server:
+#   wm-relay-46030: transparent relay on :46031 → LG :46030 (TLS admin)
+#   wm-relay-47878: transparent relay on :47879 → LG :47878 (msgpack telemetry)
+#   wm-bridge: wm_local_bridge.py (tails relay log, publishes to HA)
+# Each run script has retry with backoff for port-binding races (gotcha 2).
+COPY services/wm-relay-46030/run /etc/services.d/wm-relay-46030/run
+COPY services/wm-relay-47878/run /etc/services.d/wm-relay-47878/run
+COPY services/wm-bridge/run /etc/services.d/wm-bridge/run
+RUN chmod +x /etc/services.d/wm-relay-46030/run \
+    /etc/services.d/wm-relay-47878/run \
+    /etc/services.d/wm-bridge/run

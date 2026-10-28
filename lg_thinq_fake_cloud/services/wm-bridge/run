@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# s6 service: wm_local_bridge.py (tails relay 47878 log, decodes washer msgpack,
+# publishes state to HA REST + MQTT). Supervised: s6 restarts on death (TASK-124).
+# The bridge depends on the relay log existing: wait for it on first boot.
+LOG=/data/bridge-supervised.log
+RELAY_LOG=/data/relay-47878-1025.log
+MODEL_JSON=/data/washer_wtwn3.model.json
+DEVICE_ID=82c2ebc0-0e9f-11f5-82b4-0051eda91d3d
+
+echo "[$(date '+%F %T')] wm-bridge starting" >> "$LOG"
+
+# Wait for the relay log to exist (relay may not have written yet on first boot).
+WAIT=0
+while [ ! -f "$RELAY_LOG" ] && [ $WAIT -lt 60 ]; do
+    echo "[$(date '+%F %T')] wm-bridge: waiting for $RELAY_LOG ($WAIT/60)" >> "$LOG"
+    sleep 5
+    WAIT=$((WAIT + 1))
+done
+
+# Ensure scripts exist (copy from /app repo on first boot).
+for f in wm_local_bridge.py model_json.py; do
+    if [ ! -f "/data/$f" ] && [ -f "/app/server/$f" ]; then
+        cp "/app/server/$f" "/data/$f"
+    fi
+done
+
+# Model JSON: copy from the repo if not in /data.
+if [ ! -f "$MODEL_JSON" ] && [ -f /app/tools/washer_wtwn3.model.json ]; then
+    cp /app/tools/washer_wtwn3.model.json "$MODEL_JSON"
+fi
+
+# HA REST auth: read from the persistent auth file (written by run.sh on boot).
+AUTH_FILE=/data/ha_auth.json
+
+RETRY=0
+while [ $RETRY -lt 60 ]; do
+    cd /data
+    python3 /data/wm_local_bridge.py \
+        --log "$RELAY_LOG" \
+        --model "$MODEL_JSON" \
+        --device "$DEVICE_ID" \
+        2>&1 | while IFS= read -r line; do
+            echo "[$(date '+%F %T')] $line" >> "$LOG"
+        done
+    RC=${PIPESTATUS[0]}
+    echo "[$(date '+%F %T')] wm-bridge exited rc=$RC, retry $RETRY/60 in $((RETRY * 2 + 1))s" >> "$LOG"
+    RETRY=$((RETRY + 1))
+    sleep $((RETRY * 2 + 1))
+done
+echo "[$(date '+%F %T')] wm-bridge: giving up after 60 retries" >> "$LOG"

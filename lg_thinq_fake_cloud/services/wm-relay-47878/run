@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# s6 service: transparent relay on :47879 → upstream LG :47878 (msgpack).
+# Supervised: s6 restarts this process when it dies (TASK-124 resilience).
+# Retry with backoff for port-binding races at container restart (gotcha 2).
+LOG=/data/relay-47878-supervised.log
+UPSTREAM=52.158.121.103:47878
+
+echo "[$(date '+%F %T')] wm-relay-47878 starting (upstream=$UPSTREAM)" >> "$LOG"
+
+# Ensure the relay script exists (first boot: copy from /app if not in /data).
+if [ ! -f /data/wm_relay.py ] && [ -f /app/deploy/wm_relay.py ]; then
+    cp /app/deploy/wm_relay.py /data/wm_relay.py
+fi
+
+RETRY=0
+while [ $RETRY -lt 30 ]; do
+    python3 /data/wm_relay.py \
+        --listen 0.0.0.0:47879 \
+        --upstream "$UPSTREAM" \
+        --cert /data/cert.pem \
+        --key /data/key.pem \
+        --log-file /data/relay-47878-1025.log
+    RC=$?
+    echo "[$(date '+%F %T')] wm-relay-47878 exited rc=$RC, retry $RETRY/30 in $((RETRY * 2 + 1))s" >> "$LOG"
+    RETRY=$((RETRY + 1))
+    sleep $((RETRY * 2 + 1))
+done
+echo "[$(date '+%F %T')] wm-relay-47878: giving up after 30 retries" >> "$LOG"
