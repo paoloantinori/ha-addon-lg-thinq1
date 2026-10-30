@@ -1,5 +1,5 @@
 name: LG ThinQ1 fake-cloud
-version: "1.5.3"
+version: "1.6.0"
 slug: lg_thinq_fake_cloud
 description: >-
   Local server that impersonates the LG ThinQ1 cloud so legacy ThinQ1 appliances
@@ -13,12 +13,18 @@ startup: services
 # otherwise adds (Init=true makes s6-overlay-suexec abort: not pid 1).
 init: false
 boot: auto
+# Supervisor watchdog: polls this URL every 120 s; two consecutive failures (or a
+# dead container) restart the app. 200 only when BOTH critical listeners complete a
+# TLS handshake; a :47878 in re-arm retry counts as healthy (TASK-128/127).
+watchdog: "http://[HOST]:46032/health"
 ports:
   46030/tcp: 46030
   47878/tcp: 47878
+  46032/tcp: 46032
 ports_description:
   46030/tcp: "ThinQ1 telemetry (TLS, impersonates *.lgthinq.com)"
   47878/tcp: "ThinQ1 control channel (raw TCP msgpack)"
+  46032/tcp: "Health endpoint for the Supervisor watchdog (plain HTTP)"
 options:
   mqtt_host: "127.0.0.1"
   mqtt_port: 1883
